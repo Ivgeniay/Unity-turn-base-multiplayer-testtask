@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Reactive;
 
 namespace client.Assets.Scripts.Core
 {

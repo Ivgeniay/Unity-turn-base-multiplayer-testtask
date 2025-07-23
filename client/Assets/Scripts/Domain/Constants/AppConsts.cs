@@ -1,4 +1,4 @@
-namespace client.Assets.Scripts.Application.Constants
+namespace client.Assets.Scripts.Domain.Constants
 {
     public static class AppConsts
     {

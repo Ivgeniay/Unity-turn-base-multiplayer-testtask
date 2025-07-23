@@ -1,4 +1,4 @@
-using client.Assets.Scripts.Application.Constants;
+using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Commands;
 using client.Assets.Scripts.Domain.Entities;
