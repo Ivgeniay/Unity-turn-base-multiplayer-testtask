@@ -38,8 +38,8 @@ namespace client.Assets.Scripts.Application.UseCases
             var nextPlayerId = GetNextPlayerId(gameSession, currentTurn.PlayerId);
             var nextTurnNumber = currentTurn.TurnNumber + 1;
 
-            var nextTurn = _turnService.CreateNextTurn(currentTurn, nextPlayerId, AppConsts.TIME_LIMIT);
-            _turnService.StartTurn(nextTurn, nextPlayerId, nextTurnNumber, AppConsts.TIME_LIMIT);
+            var nextTurn = _turnService.CreateNextTurn(currentTurn, nextPlayerId, AppConsts.Time.TURN_TIME_LIMIT);
+            _turnService.StartTurn(nextTurn, nextPlayerId, nextTurnNumber, AppConsts.Time.TURN_TIME_LIMIT);
 
             _gameContextProvider.UpdateTurn(nextTurn);
 

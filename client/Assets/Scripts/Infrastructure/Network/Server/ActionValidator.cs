@@ -3,6 +3,7 @@ using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Services;
 using UnityEngine;
 using System;
+using client.Assets.Scripts.Domain.ValueObjects;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Server
 {
@@ -25,7 +26,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             _turnService = turnService;
         }
 
-        public bool ValidateMovement(Guid unitId, Vector2Int fromPosition, Vector2Int toPosition, Guid requestingPlayerId)
+        public bool ValidateMovement(Guid unitId, Position fromPosition, Position toPosition, Guid requestingPlayerId)
         {
             try
             {
@@ -81,7 +82,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 }
 
                 var allUnits = _gameContextProvider.GetAllUnits(gameSession.SessionId);
-                
+
                 if (!_gridInteractionService.CanMoveToPosition(unit, toPosition, gameSession.Field, allUnits))
                 {
                     Debug.LogWarning($"Unit {unitId} cannot move to position {toPosition}");
@@ -97,7 +98,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
 
-        public bool ValidateAttack(Guid attackerId, Guid targetId, Vector2Int attackerPosition, Vector2Int targetPosition, Guid requestingPlayerId)
+        public bool ValidateAttack(Guid attackerId, Guid targetId, Position attackerPosition, Position targetPosition, Guid requestingPlayerId)
         {
             try
             {
@@ -178,7 +179,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 }
 
                 var allUnits = _gameContextProvider.GetAllUnits(gameSession.SessionId);
-                
+
                 if (!_gridInteractionService.CanAttackPosition(attacker, targetPosition, gameSession.Field, allUnits))
                 {
                     Debug.LogWarning($"Unit {attackerId} cannot attack position {targetPosition}");
@@ -194,4 +195,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
     }
+
+
 }

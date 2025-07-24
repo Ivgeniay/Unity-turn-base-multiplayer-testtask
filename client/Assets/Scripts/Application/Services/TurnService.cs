@@ -1,12 +1,13 @@
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Commands;
+using client.Assets.Scripts.Domain.Services;
 using MediatR;
 using System;
 
 namespace client.Assets.Scripts.Application.Services
 {
-    public class TurnService
+    public class TurnService : ITurnService
     {
         private readonly IMediator _mediator;
 

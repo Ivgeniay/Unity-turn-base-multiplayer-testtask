@@ -1,3 +1,4 @@
+using client.Assets.Scripts.Infrastructure.Extensions;
 using client.Assets.Scripts.Domain.ValueObjects;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
@@ -13,13 +14,13 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
     public class NetworkUnit : NetworkBehaviour
     {
         private NetworkVariable<Guid> _id = new NetworkVariable<Guid>(Guid.Empty);
-        private NetworkVariable<Vector2Int> _position = new NetworkVariable<Vector2Int>(Vector2Int.zero);
+        private NetworkVariable<Position> _position = new NetworkVariable<Position>(Domain.ValueObjects.Position.zero);
         private NetworkVariable<bool> _isAlive = new NetworkVariable<bool>(true);
         private NetworkVariable<Guid> _ownerId = new NetworkVariable<Guid>(Guid.Empty);
         private NetworkVariable<int> _unitTypeId = new NetworkVariable<int>(0);
 
         private readonly BehaviorSubject<Guid> _idSubject = new BehaviorSubject<Guid>(Guid.Empty);
-        private readonly BehaviorSubject<Vector2Int> _positionSubject = new BehaviorSubject<Vector2Int>(Vector2Int.zero);
+        private readonly BehaviorSubject<Position> _positionSubject = new BehaviorSubject<Position>(Domain.ValueObjects.Position.zero);
         private readonly BehaviorSubject<bool> _isAliveSubject = new BehaviorSubject<bool>(true);
         private readonly BehaviorSubject<Guid> _ownerIdSubject = new BehaviorSubject<Guid>(Guid.Empty);
         private readonly BehaviorSubject<int> _unitTypeIdSubject = new BehaviorSubject<int>(0);
@@ -27,7 +28,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private Unit _domainUnit;
 
         public IObservable<Guid> Id => _idSubject.AsObservable();
-        public IObservable<Vector2Int> Position => _positionSubject.AsObservable();
+        public IObservable<Position> Position => _positionSubject.AsObservable();
         public IObservable<bool> IsAlive => _isAliveSubject.AsObservable();
         public IObservable<Guid> OwnerId => _ownerIdSubject.AsObservable();
         public IObservable<int> UnitTypeId => _unitTypeIdSubject.AsObservable();
@@ -103,7 +104,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
 #if SERVER || HOST
         [ServerRpc(RequireOwnership = false)]
-        public void MoveUnitServerRpc(Vector2Int fromPosition, Vector2Int toPosition, Guid requestingPlayerId)
+        public void MoveUnitServerRpc(Position fromPosition, Position toPosition, Guid requestingPlayerId)
         {
             if (!_isAlive.Value) return;
             if (_ownerId.Value != requestingPlayerId) return;
@@ -147,7 +148,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
 #if CLIENT || HOST
         [ClientRpc]
-        public void NotifyUnitMovedClientRpc(Vector2Int fromPosition, Vector2Int toPosition)
+        public void NotifyUnitMovedClientRpc(Position fromPosition, Position toPosition)
         {
             Debug.Log($"Unit {_id.Value} moved from {fromPosition} to {toPosition}");
         }
@@ -170,7 +171,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             return _id.Value;
         }
 
-        public Vector2Int GetCurrentPosition()
+        public Position GetCurrentPosition()
         {
             return _position.Value;
         }

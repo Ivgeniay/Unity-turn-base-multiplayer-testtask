@@ -5,7 +5,6 @@ using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Commands;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using System.Linq;
@@ -13,6 +12,7 @@ using MediatR;
 using System;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
+using client.Assets.Scripts.Infrastructure.Interfaces;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Server
 {
@@ -21,22 +21,31 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
     {
         public NetworkGameSession networkGameSession;
         public NetworkTurn networkTurn;
-        
-        public GameObject unitPrefab;
 
         private readonly Dictionary<Guid, NetworkUnit> _networkUnits = new Dictionary<Guid, NetworkUnit>();
         private readonly Dictionary<ulong, Guid> _clientToPlayerMap = new Dictionary<ulong, Guid>();
         private readonly PlayerSessionMapper _sessionMapper = new PlayerSessionMapper();
         
         private IGameContextProvider _gameContextProvider;
+        private INetworkUnitFactory _unitFactory;
         private IMediator _mediator;
         private ActionValidator _actionValidator;
 
-        public void Initialize(IGameContextProvider gameContextProvider, IMediator mediator, ActionValidator actionValidator)
+        public void Initialize(
+            IGameContextProvider gameContextProvider,
+            IMediator mediator,
+            ActionValidator actionValidator,
+            INetworkUnitFactory networkUnitFactory)
         {
             _gameContextProvider = gameContextProvider;
             _mediator = mediator;
             _actionValidator = actionValidator;
+            _unitFactory = networkUnitFactory;
+            
+            if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
+            {
+                serverContextProvider.Initialize(networkGameSession, networkTurn);
+            }
         }
 
         public override void OnNetworkSpawn()
@@ -114,7 +123,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 
                 var firstTurn = _gameContextProvider.GetCurrentTurn();
                 networkTurn.InitializeTurn(firstTurn);
-                networkTurn.StartNewTurn(playerIds[0], AppConsts.STARTING_TURN, AppConsts.TIME_LIMIT);
+                networkTurn.StartNewTurn(playerIds[0], AppConsts.STARTING_TURN, AppConsts.Time.TURN_TIME_LIMIT);
             }
         }
 
@@ -131,7 +140,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
 
         private void CreateNetworkUnit(Unit domainUnit)
         {
-            var unitObject = Instantiate(unitPrefab);
+            var unitObject = _unitFactory.CreateUnit(domainUnit);
             var networkUnit = unitObject.GetComponent<NetworkUnit>();
             var networkObject = unitObject.GetComponent<NetworkObject>();
             
@@ -142,10 +151,15 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 
                 _sessionMapper.RegisterUnit(networkObject.NetworkObjectId, domainUnit.Id);
                 _networkUnits[domainUnit.Id] = networkUnit;
+                
+                if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
+                {
+                    serverContextProvider.RegisterNetworkUnit(domainUnit.Id, networkUnit);
+                }
             }
         }
 
-        public async void OnMoveUnitRequested(Guid unitId, Vector2Int fromPosition, Vector2Int toPosition, Guid requestingPlayerId)
+        public async void OnMoveUnitRequested(Guid unitId, Position fromPosition, Position toPosition, Guid requestingPlayerId)
         {
             if (!_actionValidator.ValidateMovement(unitId, fromPosition, toPosition, requestingPlayerId))
             {
@@ -163,6 +177,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             var success = await _mediator.Send<bool>(moveCommand);
             if (success)
             {
+                if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
+                {
+                    serverContextProvider.SyncDomainToNetwork();
+                }
+                
                 if (_networkUnits.TryGetValue(unitId, out var networkUnit))
                 {
                     networkUnit.NotifyUnitMovedClientRpc(fromPosition, toPosition);
@@ -172,7 +191,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
 
-        public async void OnAttackUnitRequested(Guid attackerId, Guid targetId, Vector2Int attackerPosition, Vector2Int targetPosition, Guid requestingPlayerId)
+        public async void OnAttackUnitRequested(Guid attackerId, Guid targetId, Position attackerPosition, Position targetPosition, Guid requestingPlayerId)
         {
             if (!_actionValidator.ValidateAttack(attackerId, targetId, attackerPosition, targetPosition, requestingPlayerId))
             {
@@ -191,6 +210,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             var success = await _mediator.Send<bool>(attackCommand);
             if (success)
             {
+                if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
+                {
+                    serverContextProvider.SyncDomainToNetwork();
+                }
+                
                 if (_networkUnits.TryGetValue(attackerId, out var attackerUnit))
                 {
                     attackerUnit.NotifyUnitAttackedClientRpc(targetId);
@@ -237,10 +261,20 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 }
                 
                 _sessionMapper.UnregisterUnit(unitId);
+                
+                if (_gameContextProvider is ServerGameContextProvider sContextProvider)
+                {
+                    sContextProvider.UnregisterNetworkUnit(unitId);
+                }
             }
             
             _networkUnits.Clear();
             _clientToPlayerMap.Clear();
+            
+            if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
+            {
+                serverContextProvider.Clear();
+            }
         }
 
         private void Update()

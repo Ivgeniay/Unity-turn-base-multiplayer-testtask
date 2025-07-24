@@ -1,9 +1,9 @@
 using Unity.Netcode;
 using System;
 
-namespace client.Assets.Scripts.Infrastructure.Network.Extensions
+namespace client.Assets.Scripts.Infrastructure.Extensions
 {
-        public static class GuidNetworkExtensions
+    public static class GuidNetworkExtensions
     {
         public static void WriteValueSafe(this FastBufferWriter writer, in Guid value)
         {

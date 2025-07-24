@@ -4,20 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System;
+using client.Assets.Scripts.Domain.ValueObjects;
 
 namespace client.Assets.Scripts.Application.Services
 {
     public class PathfindingService : IPathfindingService
     {
-        private static readonly Vector2Int[] Directions = 
+        private static readonly Position[] Directions = 
         {
-            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+            Position.up, Position.down, Position.left, Position.right
         };
 
-        public List<Vector2Int> FindPath(Vector2Int start, Vector2Int end, GameField field, List<Unit> units)
+        public List<Position> FindPath(Position start, Position end, GameField field, List<Unit> units)
         {
             var openList = new List<PathNode>();
-            var closedList = new HashSet<Vector2Int>();
+            var closedList = new HashSet<Position>();
             var startNode = new PathNode(start, 0, GetHeuristic(start, end), null);
             
             openList.Add(startNode);
@@ -55,32 +56,32 @@ namespace client.Assets.Scripts.Application.Services
                 }
             }
 
-            return new List<Vector2Int>();
+            return new List<Position>();
         }
 
-        public bool HasPath(Vector2Int start, Vector2Int end, GameField field, List<Unit> units)
+        public bool HasPath(Position start, Position end, GameField field, List<Unit> units)
         {
             var path = FindPath(start, end, field, units);
             return path.Count > 0;
         }
 
-        public int GetPathLength(Vector2Int start, Vector2Int end, GameField field, List<Unit> units)
+        public int GetPathLength(Position start, Position end, GameField field, List<Unit> units)
         {
             var path = FindPath(start, end, field, units);
             return path.Count;
         }
 
-        public bool IsPositionReachable(Vector2Int start, Vector2Int target, int maxDistance, GameField field, List<Unit> units)
+        public bool IsPositionReachable(Position start, Position target, int maxDistance, GameField field, List<Unit> units)
         {
             var path = FindPath(start, target, field, units);
             return path.Count > 0 && path.Count <= maxDistance;
         }
 
-        public List<Vector2Int> GetReachablePositions(Vector2Int start, int maxDistance, GameField field, List<Unit> units)
+        public List<Position> GetReachablePositions(Position start, int maxDistance, GameField field, List<Unit> units)
         {
-            var reachablePositions = new List<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
-            var queue = new Queue<(Vector2Int position, int distance)>();
+            var reachablePositions = new List<Position>();
+            var visited = new HashSet<Position>();
+            var queue = new Queue<(Position position, int distance)>();
             
             queue.Enqueue((start, 0));
             visited.Add(start);
@@ -110,7 +111,7 @@ namespace client.Assets.Scripts.Application.Services
             return reachablePositions;
         }
 
-        public bool IsDirectPathClear(Vector2Int start, Vector2Int end, GameField field)
+        public bool IsDirectPathClear(Position start, Position end, GameField field)
         {
             var dx = Math.Abs(end.x - start.x);
             var dy = Math.Abs(end.y - start.y);
@@ -125,7 +126,7 @@ namespace client.Assets.Scripts.Application.Services
 
             while (true)
             {
-                var currentPos = new Vector2Int(x, y);
+                var currentPos = new Position(x, y);
                 
                 if (currentPos != start && currentPos != end)
                 {
@@ -149,9 +150,9 @@ namespace client.Assets.Scripts.Application.Services
             return true;
         }
 
-        public List<Vector2Int> GetNeighbors(Vector2Int position, GameField field)
+        public List<Position> GetNeighbors(Position position, GameField field)
         {
-            var neighbors = new List<Vector2Int>();
+            var neighbors = new List<Position>();
 
             foreach (var direction in Directions)
             {
@@ -165,24 +166,24 @@ namespace client.Assets.Scripts.Application.Services
             return neighbors;
         }
 
-        private bool IsWithinBounds(Vector2Int position, GameField field)
+        private bool IsWithinBounds(Position position, GameField field)
         {
             return position.x >= 0 && position.x < field.Width &&
                    position.y >= 0 && position.y < field.Height;
         }
 
-        private bool IsPositionBlocked(Vector2Int position, GameField field, List<Unit> units)
+        private bool IsPositionBlocked(Position position, GameField field, List<Unit> units)
         {
             if (field.Obstacles.Contains(position)) return true;
             return units.Any(unit => unit.IsAlive && unit.Position == position);
         }
 
-        private int GetHeuristic(Vector2Int from, Vector2Int to) =>
+        private int GetHeuristic(Position from, Position to) =>
             Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y);
 
-        private List<Vector2Int> ReconstructPath(PathNode endNode)
+        private List<Position> ReconstructPath(PathNode endNode)
         {
-            var path = new List<Vector2Int>();
+            var path = new List<Position>();
             var currentNode = endNode;
 
             while (currentNode != null)
@@ -197,13 +198,13 @@ namespace client.Assets.Scripts.Application.Services
 
         private class PathNode
         {
-            public Vector2Int Position { get; }
+            public Position Position { get; }
             public int GCost { get; set; }
             public int HCost { get; }
             public int FCost => GCost + HCost;
             public PathNode Parent { get; set; }
 
-            public PathNode(Vector2Int position, int gCost, int hCost, PathNode parent)
+            public PathNode(Position position, int gCost, int hCost, PathNode parent)
             {
                 Position = position;
                 GCost = gCost;

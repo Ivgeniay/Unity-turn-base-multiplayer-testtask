@@ -1,7 +1,7 @@
 using client.Assets.Scripts.Domain.Entities;
 using System.Collections.Generic;
-using UnityEngine;
 using System;
+using client.Assets.Scripts.Domain.ValueObjects;
 
 namespace client.Assets.Scripts.Domain.Interfaces
 {
@@ -14,8 +14,8 @@ namespace client.Assets.Scripts.Domain.Interfaces
         Unit GetUnit(Guid unitId);
         List<Unit> GetAllUnits(string sessionId);
         List<Unit> GetPlayerUnits(Guid playerId);
-        Unit GetUnitAtPosition(Vector2Int position, string sessionId);
-        void UpdateUnitPosition(Guid unitId, Vector2Int newPosition);
+        Unit GetUnitAtPosition(Position position, string sessionId);
+        void UpdateUnitPosition(Guid unitId, Position newPosition);
         void RemoveUnit(Guid unitId);
         
         Player GetPlayer(Guid playerId);

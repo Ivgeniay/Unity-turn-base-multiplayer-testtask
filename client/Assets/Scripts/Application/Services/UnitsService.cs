@@ -27,7 +27,7 @@ namespace client.Assets.Scripts.Application.Services
             return unit.IsAlive;
         }
 
-        public void MoveUnit(Unit unit, Vector2Int targetPosition)
+        public void MoveUnit(Unit unit, Position targetPosition)
         {
             if (!CanUnitMove(unit)) return;
             

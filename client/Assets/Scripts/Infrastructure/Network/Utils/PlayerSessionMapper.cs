@@ -5,8 +5,8 @@ namespace client.Assets.Scripts.Infrastructure.Network.Utils
 {
     public class PlayerSessionMapper
     {
-        private readonly Dictionary<ulong, Guid> _networkToUnit = new();
-        private readonly Dictionary<Guid, ulong> _unitToNetwork = new();
+        private readonly Dictionary<ulong, Guid> _networkToUnit = new Dictionary<ulong, Guid>();
+        private readonly Dictionary<Guid, ulong> _unitToNetwork = new Dictionary<Guid, ulong>();
         
         public void RegisterUnit(ulong networkObjectId, Guid unitId)
         {

@@ -8,11 +8,11 @@ namespace client.Assets.Scripts.Domain.Entities
     {
         public Guid Id { get; }
         public UnitType Type { get; }
-        public Vector2Int Position { get; set; }
+        public Position Position { get; set; }
         public Guid OwnerId { get; }
         public bool IsAlive { get; set; }
 
-        public Unit(Guid id, UnitType type, Vector2Int position, Guid ownerId)
+        public Unit(Guid id, UnitType type, Position position, Guid ownerId)
         {
             if (type == null) throw new ArgumentNullException("type");
             Id = id;

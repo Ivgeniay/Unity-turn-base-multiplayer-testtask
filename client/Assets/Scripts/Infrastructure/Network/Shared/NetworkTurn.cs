@@ -1,3 +1,4 @@
+using client.Assets.Scripts.Infrastructure.Extensions;
 using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Entities;
 using System.Reactive.Subjects;
@@ -12,13 +13,13 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
     {
         private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
         private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(AppConsts.STARTING_TURN);
-        private NetworkVariable<float> _timeRemaining = new NetworkVariable<float>(AppConsts.TIME_LIMIT);
+        private NetworkVariable<float> _timeRemaining = new NetworkVariable<float>(AppConsts.Time.TURN_TIME_LIMIT);
         private NetworkVariable<bool> _movementUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<bool> _attackUsed = new NetworkVariable<bool>(false);
 
         private readonly BehaviorSubject<Guid> _currentPlayerSubject = new BehaviorSubject<Guid>(Guid.Empty);
         private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(AppConsts.STARTING_TURN);
-        private readonly BehaviorSubject<float> _timeRemainingSubject = new BehaviorSubject<float>(AppConsts.TIME_LIMIT);
+        private readonly BehaviorSubject<float> _timeRemainingSubject = new BehaviorSubject<float>(AppConsts.Time.TURN_TIME_LIMIT);
         private readonly BehaviorSubject<bool> _movementUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<bool> _attackUsedSubject = new BehaviorSubject<bool>(false);
 

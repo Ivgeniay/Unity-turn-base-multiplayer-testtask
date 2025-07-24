@@ -5,10 +5,11 @@ using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Services;
 using System.Threading.Tasks;
 using System.Threading;
+using MediatR;
 
 namespace client.Assets.Scripts.Application.UseCases
 {
-    public class StartGameUseCase
+    public class StartGameUseCase : IRequestHandler<StartGameCommand, bool>
     {
         private readonly IGameContextProvider _gameContextProvider;
         private readonly ITurnService _turnService;
@@ -34,8 +35,8 @@ namespace client.Assets.Scripts.Application.UseCases
             gameSession.Field = gameField;
             gameSession.IsGameActive = true;
 
-            var firstTurn = new Turn(player1.Id, AppConsts.STARTING_TURN, AppConsts.TIME_LIMIT);
-            _turnService.StartTurn(firstTurn, player1.Id, AppConsts.STARTING_TURN, AppConsts.TIME_LIMIT);
+            var firstTurn = new Turn(player1.Id, AppConsts.STARTING_TURN, AppConsts.Time.TURN_TIME_LIMIT);
+            _turnService.StartTurn(firstTurn, player1.Id, AppConsts.STARTING_TURN, AppConsts.Time.TURN_TIME_LIMIT);
             gameSession.CurrentTurn = firstTurn;
 
             _gameContextProvider.CreateGameSession(gameSession);

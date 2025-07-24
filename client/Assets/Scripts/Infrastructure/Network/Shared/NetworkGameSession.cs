@@ -1,3 +1,5 @@
+using client.Assets.Scripts.Infrastructure.Extensions;
+using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Entities;
 using System.Collections.Generic;
@@ -14,7 +16,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private NetworkVariable<bool> _isGameActive = new NetworkVariable<bool>(false);
         private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(AppConsts.STARTING_TURN);
         private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
-        private NetworkVariable<float> _turnTimeRemaining = new NetworkVariable<float>(AppConsts.TIME_LIMIT);
+        private NetworkVariable<float> _turnTimeRemaining = new NetworkVariable<float>(AppConsts.Time.TURN_TIME_LIMIT);
         private NetworkVariable<bool> _movementUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<bool> _attackUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<int> _fieldWidth = new NetworkVariable<int>(10);
@@ -24,7 +26,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private readonly BehaviorSubject<bool> _isGameActiveSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(AppConsts.STARTING_TURN);
         private readonly BehaviorSubject<Guid> _currentPlayerSubject = new BehaviorSubject<Guid>(Guid.Empty);
-        private readonly BehaviorSubject<float> _turnTimeRemainingSubject = new BehaviorSubject<float>(AppConsts.TIME_LIMIT);
+        private readonly BehaviorSubject<float> _turnTimeRemainingSubject = new BehaviorSubject<float>(AppConsts.Time.TURN_TIME_LIMIT);
         private readonly BehaviorSubject<bool> _movementUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<bool> _attackUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<int> _fieldWidthSubject = new BehaviorSubject<int>(10);
@@ -185,7 +187,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             _currentPlayerId.Value = playerId;
             _turnNumber.Value += 1;
-            _turnTimeRemaining.Value = AppConsts.TIME_LIMIT;
+            _turnTimeRemaining.Value = AppConsts.Time.TURN_TIME_LIMIT;
             _movementUsed.Value = false;
             _attackUsed.Value = false;
             
@@ -253,12 +255,12 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         }
 #endif
 
-        public List<Vector2Int> GetObstacles()
+        public List<Position> GetObstacles()
         {
-            var obstacleList = new List<Vector2Int>();
+            var obstacleList = new List<Position>();
             foreach (var obstacle in obstacles)
             {
-                obstacleList.Add(obstacle);
+                obstacleList.Add(obstacle.ToPosition());
             }
             return obstacleList;
         }
