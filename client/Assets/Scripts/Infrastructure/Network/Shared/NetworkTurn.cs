@@ -1,25 +1,25 @@
-using client.Assets.Scripts.Infrastructure.Extensions;
-using client.Assets.Scripts.Domain.Constants;
+using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Domain.Entities;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using System;
+using Zenject;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Shared
 {
     public class NetworkTurn : NetworkBehaviour
     {
         private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
-        private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(AppConsts.STARTING_TURN);
-        private NetworkVariable<float> _timeRemaining = new NetworkVariable<float>(AppConsts.Time.TURN_TIME_LIMIT);
+        private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(1);
+        private NetworkVariable<float> _timeRemaining = new NetworkVariable<float>(60f);
         private NetworkVariable<bool> _movementUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<bool> _attackUsed = new NetworkVariable<bool>(false);
 
         private readonly BehaviorSubject<Guid> _currentPlayerSubject = new BehaviorSubject<Guid>(Guid.Empty);
-        private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(AppConsts.STARTING_TURN);
-        private readonly BehaviorSubject<float> _timeRemainingSubject = new BehaviorSubject<float>(AppConsts.Time.TURN_TIME_LIMIT);
+        private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(1);
+        private readonly BehaviorSubject<float> _timeRemainingSubject = new BehaviorSubject<float>(60f);
         private readonly BehaviorSubject<bool> _movementUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<bool> _attackUsedSubject = new BehaviorSubject<bool>(false);
 
@@ -33,35 +33,48 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
         public Turn DomainTurn => _domainTurn;
 
+        private IGameConfiguration _config;
+
+        [Inject]
+        public void Initialize(IGameConfiguration config)
+        {
+            _config = config;
+            var gameSettings = config.GetGameSettings();
+            var gameRules = config.GetGameRules();
+
+            _turnNumber.Value = gameSettings.StartingTurn;
+            _timeRemaining.Value = gameRules.TurnTimeLimit;
+        }
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            
-            _currentPlayerId.OnValueChanged += (oldId, newId) => 
+
+            _currentPlayerId.OnValueChanged += (oldId, newId) =>
             {
                 _currentPlayerSubject.OnNext(newId);
                 SyncToDomain();
             };
-            
-            _turnNumber.OnValueChanged += (oldNumber, newNumber) => 
+
+            _turnNumber.OnValueChanged += (oldNumber, newNumber) =>
             {
                 _turnNumberSubject.OnNext(newNumber);
                 SyncToDomain();
             };
-            
-            _timeRemaining.OnValueChanged += (oldTime, newTime) => 
+
+            _timeRemaining.OnValueChanged += (oldTime, newTime) =>
             {
                 _timeRemainingSubject.OnNext(newTime);
                 SyncToDomain();
             };
-            
-            _movementUsed.OnValueChanged += (oldUsed, newUsed) => 
+
+            _movementUsed.OnValueChanged += (oldUsed, newUsed) =>
             {
                 _movementUsedSubject.OnNext(newUsed);
                 SyncToDomain();
             };
-            
-            _attackUsed.OnValueChanged += (oldUsed, newUsed) => 
+
+            _attackUsed.OnValueChanged += (oldUsed, newUsed) =>
             {
                 _attackUsedSubject.OnNext(newUsed);
                 SyncToDomain();

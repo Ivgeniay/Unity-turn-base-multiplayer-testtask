@@ -1,5 +1,4 @@
 using client.Assets.Scripts.Domain.ValueObjects;
-using UnityEngine;
 using System;
 
 namespace client.Assets.Scripts.Domain.Entities

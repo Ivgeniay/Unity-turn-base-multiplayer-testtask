@@ -1,3 +1,4 @@
+using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Infrastructure.Extensions;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Constants;
@@ -14,9 +15,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
     public class NetworkGameSession : NetworkBehaviour
     {
         private NetworkVariable<bool> _isGameActive = new NetworkVariable<bool>(false);
-        private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(AppConsts.STARTING_TURN);
+        private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(1);
         private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
-        private NetworkVariable<float> _turnTimeRemaining = new NetworkVariable<float>(AppConsts.Time.TURN_TIME_LIMIT);
+        private NetworkVariable<float> _turnTimeRemaining = new NetworkVariable<float>(60f);
         private NetworkVariable<bool> _movementUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<bool> _attackUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<int> _fieldWidth = new NetworkVariable<int>(10);
@@ -24,9 +25,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private NetworkVariable<float> _cellSize = new NetworkVariable<float>(0.5f);
 
         private readonly BehaviorSubject<bool> _isGameActiveSubject = new BehaviorSubject<bool>(false);
-        private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(AppConsts.STARTING_TURN);
+        private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(1);
         private readonly BehaviorSubject<Guid> _currentPlayerSubject = new BehaviorSubject<Guid>(Guid.Empty);
-        private readonly BehaviorSubject<float> _turnTimeRemainingSubject = new BehaviorSubject<float>(AppConsts.Time.TURN_TIME_LIMIT);
+        private readonly BehaviorSubject<float> _turnTimeRemainingSubject = new BehaviorSubject<float>(60f);
         private readonly BehaviorSubject<bool> _movementUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<bool> _attackUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<int> _fieldWidthSubject = new BehaviorSubject<int>(10);
@@ -37,6 +38,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private NetworkList<Guid> playerIds;
 
         private GameSession _domainGameSession;
+        private IGameConfiguration _gameConfiguration;
 
         public IObservable<bool> IsGameActive => _isGameActiveSubject.AsObservable();
         public IObservable<int> TurnNumber => _turnNumberSubject.AsObservable();
@@ -49,6 +51,17 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         public IObservable<float> CellSize => _cellSizeSubject.AsObservable();
 
         public GameSession DomainGameSession => _domainGameSession;
+
+        private void Initialize(IGameConfiguration config)
+        {
+            _gameConfiguration = config;
+
+            var gameSettings = config.GetGameSettings();
+            var gameRules = config.GetGameRules();
+            
+            _turnNumber.Value = gameSettings.StartingTurn;
+            _turnTimeRemaining.Value = gameRules.TurnTimeLimit;
+        }
 
         private void Start()
         {
@@ -187,7 +200,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             _currentPlayerId.Value = playerId;
             _turnNumber.Value += 1;
-            _turnTimeRemaining.Value = AppConsts.Time.TURN_TIME_LIMIT;
+            _turnTimeRemaining.Value = _gameConfiguration.GetGameRules().TurnTimeLimit;
             _movementUsed.Value = false;
             _attackUsed.Value = false;
             

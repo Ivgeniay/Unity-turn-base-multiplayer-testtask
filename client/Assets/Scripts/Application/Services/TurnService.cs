@@ -78,9 +78,4 @@ namespace client.Assets.Scripts.Application.Services
             return turn.PlayerId == playerId && !IsTurnTimeExpired(turn);
         }
     }
-
-    internal class UseActionQuery : IRequest<object>
-    {
-        public Turn Turn { get; set; }
-    }
 }

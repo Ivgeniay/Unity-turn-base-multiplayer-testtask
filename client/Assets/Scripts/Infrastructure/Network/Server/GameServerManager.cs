@@ -1,18 +1,21 @@
 using client.Assets.Scripts.Infrastructure.Network.Shared;
 using client.Assets.Scripts.Infrastructure.Network.Utils;
+using client.Assets.Scripts.Infrastructure.Interfaces;
+using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Commands;
+using client.Assets.Scripts.Domain.Entities;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using System.Linq;
+using Zenject;
 using MediatR;
 using System;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
-using client.Assets.Scripts.Infrastructure.Interfaces;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Server
 {
@@ -30,18 +33,23 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
         private INetworkUnitFactory _unitFactory;
         private IMediator _mediator;
         private ActionValidator _actionValidator;
-
+        private IGameConfiguration _gameConfiguration;
+         
+        [Inject]
         public void Initialize(
             IGameContextProvider gameContextProvider,
             IMediator mediator,
             ActionValidator actionValidator,
-            INetworkUnitFactory networkUnitFactory)
+            INetworkUnitFactory networkUnitFactory,
+            IGameConfiguration gameConfiguration
+            )
         {
             _gameContextProvider = gameContextProvider;
             _mediator = mediator;
             _actionValidator = actionValidator;
             _unitFactory = networkUnitFactory;
-            
+            _gameConfiguration = gameConfiguration;
+
             if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
             {
                 serverContextProvider.Initialize(networkGameSession, networkTurn);
@@ -112,18 +120,20 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 CellSize = 0.5f
             };
 
-            var success = await _mediator.Send<bool>(startGameCommand);
-            if (success)
+            var session = await _mediator.Send<GameSession>(startGameCommand);
+            if (session != null)
             {
-                var gameSession = _gameContextProvider.GetCurrentGameSession();
-                networkGameSession.InitializeGameSession(gameSession);
+                // var session = _gameContextProvider.GetCurrentGameSession();
+                networkGameSession.InitializeGameSession(session);
                 networkGameSession.StartGameServerRpc(playerIds[0], playerIds[1], 10, 10, 0.5f);
                 
                 CreateUnitsForPlayers(playerIds);
                 
                 var firstTurn = _gameContextProvider.GetCurrentTurn();
+                var gameSettings = _gameConfiguration.GetGameSettings();
+                var gameRules = _gameConfiguration.GetGameRules();
                 networkTurn.InitializeTurn(firstTurn);
-                networkTurn.StartNewTurn(playerIds[0], AppConsts.STARTING_TURN, AppConsts.Time.TURN_TIME_LIMIT);
+                networkTurn.StartNewTurn(playerIds[0], gameSettings.StartingTurn, gameRules.TurnTimeLimit);
             }
         }
 

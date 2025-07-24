@@ -1,10 +1,10 @@
+using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Services;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System;
-using client.Assets.Scripts.Domain.ValueObjects;
 
 namespace client.Assets.Scripts.Application.Services
 {

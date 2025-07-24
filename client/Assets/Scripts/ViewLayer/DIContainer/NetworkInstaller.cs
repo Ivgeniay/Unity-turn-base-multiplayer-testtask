@@ -1,15 +1,17 @@
+using client.Assets.Scripts.Infrastructure.Unity.Factories;
 using client.Assets.Scripts.Infrastructure.Network.Server;
 using client.Assets.Scripts.Infrastructure.Network.Shared;
+using client.Assets.Scripts.Infrastructure.Interfaces;
+using client.Assets.Scripts.Domain.Interfaces.Configs;
+using client.Assets.Scripts.Domain.ValueObjects;
+using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Interfaces;
+using System.Threading.Tasks;
 using UnityEngine;
 using MediatR;
 using Zenject;
-using client.Assets.Scripts.Domain.Constants;
-using client.Assets.Scripts.Domain.ValueObjects;
-using client.Assets.Scripts.Infrastructure.Unity.Factories;
-using client.Assets.Scripts.Infrastructure.Interfaces;
 
-namespace client.Assets.Scripts.Core.DIContainer
+namespace client.Assets.Scripts.ViewLayer.DIContainer
 {
     public class NetworkInstaller : MonoInstaller
     {
@@ -29,26 +31,15 @@ namespace client.Assets.Scripts.Core.DIContainer
 
         private void InstallNetworkComponents()
         {
-            if (networkGameSession != null)
-            {
-                Container.Bind<NetworkGameSession>().FromInstance(networkGameSession).AsSingle();
-            }
-
-            if (networkTurn != null)
-            {
-                Container.Bind<NetworkTurn>().FromInstance(networkTurn).AsSingle();
-            }
-
+            Container.Bind<NetworkGameSession>().FromInstance(networkGameSession).AsSingle();
+            Container.Bind<NetworkTurn>().FromInstance(networkTurn).AsSingle();
             Container.Bind<INetworkUnitFactory>().To<NetworkUnitFactory>().AsSingle();
         }
 
         private void InstallServerComponents()
         {
 #if SERVER || HOST
-            if (gameServerManager != null)
-            {
-                Container.Bind<GameServerManager>().FromInstance(gameServerManager).AsSingle();
-            }
+            Container.Bind<GameServerManager>().FromInstance(gameServerManager).AsSingle();
 #endif
         }
 
@@ -67,15 +58,6 @@ namespace client.Assets.Scripts.Core.DIContainer
         private void InitializeServerComponents()
         {
 #if SERVER || HOST
-            var contextProvider = Container.Resolve<IGameContextProvider>();
-            var mediator = Container.Resolve<IMediator>();
-            var actionValidator = Container.Resolve<ActionValidator>();
-            var unitFactory = Container.Resolve<INetworkUnitFactory>();
-
-            if (gameServerManager != null)
-            {
-                gameServerManager.Initialize(contextProvider, mediator, actionValidator, unitFactory);
-            }
 #endif
         }
     }

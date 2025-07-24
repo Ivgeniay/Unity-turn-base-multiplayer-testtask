@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using System;
 using client.Assets.Scripts.Domain.ValueObjects;
+using Zenject;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Server
 {
@@ -21,7 +22,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
         private NetworkTurn _networkTurn;
         private readonly Dictionary<Guid, NetworkUnit> _networkUnits = new Dictionary<Guid, NetworkUnit>();
 
-        public void Initialize(NetworkGameSession networkGameSession, NetworkTurn networkTurn)
+        [Inject]
+        public void Initialize(
+            NetworkGameSession networkGameSession,
+            NetworkTurn networkTurn
+            )
         {
             _networkGameSession = networkGameSession;
             _networkTurn = networkTurn;

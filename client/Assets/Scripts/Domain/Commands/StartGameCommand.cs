@@ -1,9 +1,10 @@
-using System;
+using client.Assets.Scripts.Domain.Entities;
 using MediatR;
+using System;
 
 namespace client.Assets.Scripts.Domain.Commands
 {
-    public class StartGameCommand : IRequest<bool>
+    public class StartGameCommand : IRequest<GameSession>
     {
         public string SessionId { get; set; }
         public Guid Player1Id { get; set; }

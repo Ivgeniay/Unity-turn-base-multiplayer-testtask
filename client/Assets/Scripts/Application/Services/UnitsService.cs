@@ -1,7 +1,6 @@
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Services;
 using client.Assets.Scripts.Domain.Commands;
-using UnityEngine;
 using MediatR;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
@@ -12,7 +11,9 @@ namespace client.Assets.Scripts.Application.Services
     {
         private readonly IMediator _mediator;
 
-        public UnitsService(IMediator mediator)
+        public UnitsService(
+            IMediator mediator
+            )
         {
             _mediator = mediator;
         }

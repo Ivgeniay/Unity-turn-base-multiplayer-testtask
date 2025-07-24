@@ -1,4 +1,4 @@
-using client.Assets.Scripts.Domain.Constants;
+using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Services;
@@ -14,13 +14,16 @@ namespace client.Assets.Scripts.Application.UseCases
     {
         private readonly IGameContextProvider _gameContextProvider;
         private readonly ITurnService _turnService;
+        private readonly IGameConfiguration _config;
 
         public EndTurnUseCase(
             IGameContextProvider gameContextProvider,
-            ITurnService turnService)
+            ITurnService turnService,
+            IGameConfiguration config)
         {
             _gameContextProvider = gameContextProvider;
             _turnService = turnService;
+            _config = config;
         }
 
         public async Task<bool> Handle(EndTurnCommand request, CancellationToken cancellationToken)
@@ -38,8 +41,9 @@ namespace client.Assets.Scripts.Application.UseCases
             var nextPlayerId = GetNextPlayerId(gameSession, currentTurn.PlayerId);
             var nextTurnNumber = currentTurn.TurnNumber + 1;
 
-            var nextTurn = _turnService.CreateNextTurn(currentTurn, nextPlayerId, AppConsts.Time.TURN_TIME_LIMIT);
-            _turnService.StartTurn(nextTurn, nextPlayerId, nextTurnNumber, AppConsts.Time.TURN_TIME_LIMIT);
+            var gameRules = _config.GetGameRules();
+            var nextTurn = _turnService.CreateNextTurn(currentTurn, nextPlayerId, gameRules.TurnTimeLimit);
+            _turnService.StartTurn(nextTurn, nextPlayerId, nextTurnNumber, gameRules.TurnTimeLimit);
 
             _gameContextProvider.UpdateTurn(nextTurn);
 
