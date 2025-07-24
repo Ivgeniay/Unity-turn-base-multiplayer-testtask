@@ -15,21 +15,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
     public class NetworkGameSession : NetworkBehaviour
     {
         private NetworkVariable<bool> _isGameActive = new NetworkVariable<bool>(false);
-        private NetworkVariable<int> _turnNumber = new NetworkVariable<int>(1);
-        private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
-        private NetworkVariable<float> _turnTimeRemaining = new NetworkVariable<float>(60f);
-        private NetworkVariable<bool> _movementUsed = new NetworkVariable<bool>(false);
-        private NetworkVariable<bool> _attackUsed = new NetworkVariable<bool>(false);
         private NetworkVariable<int> _fieldWidth = new NetworkVariable<int>(10);
         private NetworkVariable<int> _fieldHeight = new NetworkVariable<int>(10);
         private NetworkVariable<float> _cellSize = new NetworkVariable<float>(0.5f);
 
         private readonly BehaviorSubject<bool> _isGameActiveSubject = new BehaviorSubject<bool>(false);
-        private readonly BehaviorSubject<int> _turnNumberSubject = new BehaviorSubject<int>(1);
-        private readonly BehaviorSubject<Guid> _currentPlayerSubject = new BehaviorSubject<Guid>(Guid.Empty);
-        private readonly BehaviorSubject<float> _turnTimeRemainingSubject = new BehaviorSubject<float>(60f);
-        private readonly BehaviorSubject<bool> _movementUsedSubject = new BehaviorSubject<bool>(false);
-        private readonly BehaviorSubject<bool> _attackUsedSubject = new BehaviorSubject<bool>(false);
         private readonly BehaviorSubject<int> _fieldWidthSubject = new BehaviorSubject<int>(10);
         private readonly BehaviorSubject<int> _fieldHeightSubject = new BehaviorSubject<int>(10);
         private readonly BehaviorSubject<float> _cellSizeSubject = new BehaviorSubject<float>(0.5f);
@@ -38,29 +28,28 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private NetworkList<Guid> playerIds;
 
         private GameSession _domainGameSession;
-        private IGameConfiguration _gameConfiguration;
+        private IGameConfiguration _config;
+        private NetworkTurn _networkTurn;
 
         public IObservable<bool> IsGameActive => _isGameActiveSubject.AsObservable();
-        public IObservable<int> TurnNumber => _turnNumberSubject.AsObservable();
-        public IObservable<Guid> CurrentPlayerId => _currentPlayerSubject.AsObservable();
-        public IObservable<float> TurnTimeRemaining => _turnTimeRemainingSubject.AsObservable();
-        public IObservable<bool> MovementUsed => _movementUsedSubject.AsObservable();
-        public IObservable<bool> AttackUsed => _attackUsedSubject.AsObservable();
+        public IObservable<int> TurnNumber => _networkTurn.TurnNumber;
+        public IObservable<Guid> CurrentPlayerId => _networkTurn.CurrentPlayerId;
+        public IObservable<float> TurnTimeRemaining => _networkTurn.TimeRemaining;
+        public IObservable<bool> MovementUsed => _networkTurn.MovementUsed;
+        public IObservable<bool> AttackUsed => _networkTurn.AttackUsed;
         public IObservable<int> FieldWidth => _fieldWidthSubject.AsObservable();
         public IObservable<int> FieldHeight => _fieldHeightSubject.AsObservable();
         public IObservable<float> CellSize => _cellSizeSubject.AsObservable();
 
         public GameSession DomainGameSession => _domainGameSession;
 
-        private void Initialize(IGameConfiguration config)
+        private void Initialize(
+            NetworkTurn networkTurn,
+            IGameConfiguration config
+            )
         {
-            _gameConfiguration = config;
-
-            var gameSettings = config.GetGameSettings();
-            var gameRules = config.GetGameRules();
-            
-            _turnNumber.Value = gameSettings.StartingTurn;
-            _turnTimeRemaining.Value = gameRules.TurnTimeLimit;
+            _config = config;
+            _networkTurn = networkTurn;
         }
 
         private void Start()
@@ -77,31 +66,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             {
                 _isGameActiveSubject.OnNext(newValue);
                 SyncToDomain();
-            };
-            
-            _turnNumber.OnValueChanged += (oldValue, newValue) => 
-            {
-                _turnNumberSubject.OnNext(newValue);
-            };
-            
-            _currentPlayerId.OnValueChanged += (oldValue, newValue) => 
-            {
-                _currentPlayerSubject.OnNext(newValue);
-            };
-            
-            _turnTimeRemaining.OnValueChanged += (oldValue, newValue) => 
-            {
-                _turnTimeRemainingSubject.OnNext(newValue);
-            };
-            
-            _movementUsed.OnValueChanged += (oldValue, newValue) => 
-            {
-                _movementUsedSubject.OnNext(newValue);
-            };
-            
-            _attackUsed.OnValueChanged += (oldValue, newValue) => 
-            {
-                _attackUsedSubject.OnNext(newValue);
             };
             
             _fieldWidth.OnValueChanged += (oldValue, newValue) => 
@@ -123,7 +87,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             };
         }
 
-        public void InitializeGameSession(GameSession domainGameSession)
+        public void InitializeGameSession(
+            GameSession domainGameSession
+            )
         {
             _domainGameSession = domainGameSession;
             SyncFromDomain();
@@ -141,15 +107,8 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
                 _fieldHeight.Value = _domainGameSession.Field.Height;
                 _cellSize.Value = _domainGameSession.Field.CellSize;
             }
-            
-            if (_domainGameSession.CurrentTurn != null)
-            {
-                _turnNumber.Value = _domainGameSession.CurrentTurn.TurnNumber;
-                _currentPlayerId.Value = _domainGameSession.CurrentTurn.PlayerId;
-                _turnTimeRemaining.Value = _domainGameSession.CurrentTurn.TimeRemaining;
-                _movementUsed.Value = _domainGameSession.CurrentTurn.MovementUsed;
-                _attackUsed.Value = _domainGameSession.CurrentTurn.AttackUsed;
-            }
+
+            _networkTurn.InitializeTurn(_domainGameSession.CurrentTurn);
         }
 
         private void SyncToDomain()
@@ -187,7 +146,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         public void EndTurnServerRpc(Guid playerId)
         {
             if (!_isGameActive.Value) return;
-            if (_currentPlayerId.Value != playerId) return;
+            if (_networkTurn.GetCurrentPlayerId() != playerId) return;
 
             var nextPlayerId = GetNextPlayerId();
             if (nextPlayerId.HasValue)
@@ -198,37 +157,34 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
         public void StartNewTurn(Guid playerId)
         {
-            _currentPlayerId.Value = playerId;
-            _turnNumber.Value += 1;
-            _turnTimeRemaining.Value = _gameConfiguration.GetGameRules().TurnTimeLimit;
-            _movementUsed.Value = false;
-            _attackUsed.Value = false;
+            var turnNumber = _networkTurn.GetCurrentTurnNumber() + 1;
+            var timeLimit = _config.GetGameRules().TurnTimeLimit;
+            _networkTurn.StartNewTurn(playerId, turnNumber, timeLimit);
             
             NotifyTurnStartedClientRpc(playerId);
         }
 
         public void UseMovement()
         {
-            _movementUsed.Value = true;
+            _networkTurn.UseMovement();
         }
 
         public void UseAttack()
         {
-            _attackUsed.Value = true;
+            _networkTurn.UseAttack();
         }
 
         public void UpdateTurnTimer(float deltaTime)
         {
-            if (_turnTimeRemaining.Value > 0f)
+            _networkTurn.UpdateTimer(deltaTime);
+
+
+            if (_networkTurn.GetTimeRemaining() <= 0f)
             {
-                _turnTimeRemaining.Value -= deltaTime;
-                if (_turnTimeRemaining.Value <= 0f)
+                var nextPlayerId = GetNextPlayerId();
+                if (nextPlayerId.HasValue)
                 {
-                    var nextPlayerId = GetNextPlayerId();
-                    if (nextPlayerId.HasValue)
-                    {
-                        StartNewTurn(nextPlayerId.Value);
-                    }
+                    StartNewTurn(nextPlayerId.Value);
                 }
             }
         }
@@ -240,7 +196,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             var currentIndex = -1;
             for (int i = 0; i < playerIds.Count; i++)
             {
-                if (playerIds[i] == _currentPlayerId.Value)
+                if (playerIds[i] == GetCurrentPlayerId())
                 {
                     currentIndex = i;
                     break;
@@ -293,28 +249,23 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
         public int GetCurrentTurnNumber()
         {
-            return _turnNumber.Value;
+            return _networkTurn.GetCurrentTurnNumber();
         }
 
         public Guid GetCurrentPlayerId()
         {
-            return _currentPlayerId.Value;
+            return _networkTurn.GetCurrentPlayerId();
         }
 
         public float GetTurnTimeRemaining()
         {
-            return _turnTimeRemaining.Value;
+            return _networkTurn.GetTimeRemaining();
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
             _isGameActiveSubject?.Dispose();
-            _turnNumberSubject?.Dispose();
-            _currentPlayerSubject?.Dispose();
-            _turnTimeRemainingSubject?.Dispose();
-            _movementUsedSubject?.Dispose();
-            _attackUsedSubject?.Dispose();
             _fieldWidthSubject?.Dispose();
             _fieldHeightSubject?.Dispose();
             _cellSizeSubject?.Dispose();

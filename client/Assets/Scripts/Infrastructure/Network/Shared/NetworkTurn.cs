@@ -36,7 +36,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private IGameConfiguration _config;
 
         [Inject]
-        public void Initialize(IGameConfiguration config)
+        public void Initialize(
+            IGameConfiguration config
+            )
         {
             _config = config;
             var gameSettings = config.GetGameSettings();
@@ -173,6 +175,16 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         public bool IsTurnComplete()
         {
             return _movementUsed.Value && _attackUsed.Value;
+        }
+
+        public void UseMovement()
+        {
+            _movementUsed.Value = true;
+        }
+
+        public void UseAttack()
+        {
+            _attackUsed.Value = true;
         }
 #endif
 
