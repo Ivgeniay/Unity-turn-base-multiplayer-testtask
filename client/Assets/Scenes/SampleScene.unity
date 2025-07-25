@@ -170,6 +170,7 @@ MonoBehaviour:
   networkGameSession: {fileID: 1140871074}
   networkTurn: {fileID: 1191615058}
   gameServerManager: {fileID: 815171730}
+  networkManager: {fileID: 515081230}
   slowRankPrefab: {fileID: 5922708351005856746, guid: 8f4fb6af66fb24c79a0d8f623117f863,
     type: 3}
   fastMeleePrefab: {fileID: 9217700127311343787, guid: 3d7ada2ff8a7996a5b668c41750b9b04,

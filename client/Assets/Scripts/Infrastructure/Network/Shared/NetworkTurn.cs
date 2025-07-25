@@ -9,6 +9,7 @@ using Zenject;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Shared
 {
+    // [GenerateSerializationForType(typeof(Guid))]
     public class NetworkTurn : NetworkBehaviour
     {
         private NetworkVariable<Guid> _currentPlayerId = new NetworkVariable<Guid>(Guid.Empty);
@@ -92,7 +93,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncFromDomain()
         {
             if (_domainTurn == null) return;
-            
+
             _currentPlayerId.Value = _domainTurn.PlayerId;
             _turnNumber.Value = _domainTurn.TurnNumber;
             _timeRemaining.Value = _domainTurn.TimeRemaining;
@@ -103,7 +104,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncToDomain()
         {
             if (_domainTurn == null) return;
-            
+
             _domainTurn.PlayerId = _currentPlayerId.Value;
             _domainTurn.TurnNumber = _turnNumber.Value;
             _domainTurn.TimeRemaining = _timeRemaining.Value;
@@ -111,12 +112,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             _domainTurn.AttackUsed = _attackUsed.Value;
         }
 
-#if SERVER || HOST
         [ServerRpc(RequireOwnership = false)]
         public void EndTurnServerRpc(Guid playerId)
         {
             if (_currentPlayerId.Value != playerId) return;
-            
+
             NotifyTurnEndedClientRpc(playerId);
         }
 
@@ -125,7 +125,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             if (_currentPlayerId.Value != playerId) return;
             if (_movementUsed.Value) return;
-            
+
             _movementUsed.Value = true;
         }
 
@@ -134,7 +134,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             if (_currentPlayerId.Value != playerId) return;
             if (_attackUsed.Value) return;
-            
+
             _attackUsed.Value = true;
         }
 
@@ -145,7 +145,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             _timeRemaining.Value = timeLimit;
             _movementUsed.Value = false;
             _attackUsed.Value = false;
-            
+
             NotifyTurnStartedClientRpc(playerId, turnNumber);
         }
 
@@ -186,9 +186,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             _attackUsed.Value = true;
         }
-#endif
 
-#if CLIENT || HOST
         [ClientRpc]
         public void NotifyTurnStartedClientRpc(Guid playerId, int turnNumber)
         {
@@ -212,7 +210,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             Debug.Log($"Player {playerId} used action: {actionType}");
         }
-#endif
 
         public Guid GetCurrentPlayerId()
         {

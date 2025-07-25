@@ -5,6 +5,8 @@ using client.Assets.Scripts.Infrastructure.Interfaces;
 using client.Assets.Scripts.Domain.Constants;
 using UnityEngine;
 using Zenject;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 
 namespace client.Assets.Scripts.ViewLayer.DIContainer
 {
@@ -13,6 +15,8 @@ namespace client.Assets.Scripts.ViewLayer.DIContainer
         [SerializeField] private NetworkGameSession networkGameSession;
         [SerializeField] private NetworkTurn networkTurn;
         [SerializeField] private GameServerManager gameServerManager;
+        [SerializeField] private NetworkManager networkManager;
+        [SerializeField] private UnityTransport unityTransport;
 
         [SerializeField] private GameObject slowRankPrefab;
         [SerializeField] private GameObject fastMeleePrefab;
@@ -26,6 +30,8 @@ namespace client.Assets.Scripts.ViewLayer.DIContainer
 
         private void InstallNetworkComponents()
         {
+            Container.Bind<NetworkManager>().FromInstance(networkManager).AsSingle();
+            Container.Bind<UnityTransport>().FromInstance(unityTransport).AsSingle();
             Container.Bind<NetworkGameSession>().FromInstance(networkGameSession).AsSingle();
             Container.Bind<NetworkTurn>().FromInstance(networkTurn).AsSingle();
             Container.Bind<INetworkUnitFactory>().To<NetworkUnitFactory>().AsSingle();

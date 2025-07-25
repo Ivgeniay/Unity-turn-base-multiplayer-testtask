@@ -11,6 +11,7 @@ using Unit = client.Assets.Scripts.Domain.Entities.Unit;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Shared
 {
+    // [GenerateSerializationForType(typeof(Guid))]
     public class NetworkUnit : NetworkBehaviour
     {
         private NetworkVariable<Guid> _id = new NetworkVariable<Guid>(Guid.Empty);
@@ -39,29 +40,29 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             base.OnNetworkSpawn();
 
-            _id.OnValueChanged += (oldId, newId) => 
+            _id.OnValueChanged += (oldId, newId) =>
             {
                 _idSubject.OnNext(newId);
             };
-            
-            _position.OnValueChanged += (oldPos, newPos) => 
+
+            _position.OnValueChanged += (oldPos, newPos) =>
             {
                 _positionSubject.OnNext(newPos);
                 SyncToDomain();
             };
-            
-            _isAlive.OnValueChanged += (oldAlive, newAlive) => 
+
+            _isAlive.OnValueChanged += (oldAlive, newAlive) =>
             {
                 _isAliveSubject.OnNext(newAlive);
                 SyncToDomain();
             };
-            
-            _ownerId.OnValueChanged += (oldId, newId) => 
+
+            _ownerId.OnValueChanged += (oldId, newId) =>
             {
                 _ownerIdSubject.OnNext(newId);
             };
-            
-            _unitTypeId.OnValueChanged += (oldType, newType) => 
+
+            _unitTypeId.OnValueChanged += (oldType, newType) =>
             {
                 _unitTypeIdSubject.OnNext(newType);
             };
@@ -76,7 +77,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncFromDomain()
         {
             if (_domainUnit == null) return;
-            
+
             _id.Value = _domainUnit.Id;
             _position.Value = _domainUnit.Position;
             _isAlive.Value = _domainUnit.IsAlive;
@@ -87,7 +88,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncToDomain()
         {
             if (_domainUnit == null) return;
-            
+
             _domainUnit.Position = _position.Value;
             _domainUnit.IsAlive = _isAlive.Value;
         }
@@ -102,13 +103,12 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             };
         }
 
-#if SERVER || HOST
         [ServerRpc(RequireOwnership = false)]
         public void MoveUnitServerRpc(Position fromPosition, Position toPosition, Guid requestingPlayerId)
         {
             if (!_isAlive.Value) return;
             if (_ownerId.Value != requestingPlayerId) return;
-            
+
             _position.Value = toPosition;
             NotifyUnitMovedClientRpc(fromPosition, toPosition);
         }
@@ -118,7 +118,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             if (!_isAlive.Value) return;
             if (_ownerId.Value != attackingPlayerId) return;
-            
+
             var targetUnit = GetNetworkUnitById(targetUnitId);
             if (targetUnit != null && targetUnit._isAlive.Value)
             {
@@ -144,9 +144,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             }
             return null;
         }
-#endif
 
-#if CLIENT || HOST
         [ClientRpc]
         public void NotifyUnitMovedClientRpc(Position fromPosition, Position toPosition)
         {
@@ -164,7 +162,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             Debug.Log($"Unit {_id.Value} died");
         }
-#endif
 
         public Guid GetId()
         {

@@ -55,9 +55,10 @@ namespace client.Assets.Scripts.Domain.Interfaces.Configs
 
     public class NetworkSettings
     {
-        public int DefaultPort { get; set; }
+        public ushort DefaultPort { get; set; }
         public int MaxConnections { get; set; }
         public float ConnectionTimeout { get; set; }
+        public string Adress { get; set; }
     }
 
     public class GameSettings

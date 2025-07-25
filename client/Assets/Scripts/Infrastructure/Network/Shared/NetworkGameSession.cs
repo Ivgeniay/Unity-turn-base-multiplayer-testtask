@@ -1,7 +1,6 @@
 using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Infrastructure.Extensions;
 using client.Assets.Scripts.Domain.ValueObjects;
-using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Entities;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
@@ -9,9 +8,11 @@ using System.Reactive.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using System;
+using Zenject;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Shared
 {
+    // [GenerateSerializationForType(typeof(Guid))]
     public class NetworkGameSession : NetworkBehaviour
     {
         private NetworkVariable<bool> _isGameActive = new NetworkVariable<bool>(false);
@@ -43,7 +44,8 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
         public GameSession DomainGameSession => _domainGameSession;
 
-        private void Initialize(
+        [Inject]
+        public void Initialize(
             NetworkTurn networkTurn,
             IGameConfiguration config
             )
@@ -62,25 +64,25 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             base.OnNetworkSpawn();
 
-            _isGameActive.OnValueChanged += (oldValue, newValue) => 
+            _isGameActive.OnValueChanged += (oldValue, newValue) =>
             {
                 _isGameActiveSubject.OnNext(newValue);
                 SyncToDomain();
             };
-            
-            _fieldWidth.OnValueChanged += (oldValue, newValue) => 
+
+            _fieldWidth.OnValueChanged += (oldValue, newValue) =>
             {
                 _fieldWidthSubject.OnNext(newValue);
                 SyncToDomain();
             };
-            
-            _fieldHeight.OnValueChanged += (oldValue, newValue) => 
+
+            _fieldHeight.OnValueChanged += (oldValue, newValue) =>
             {
                 _fieldHeightSubject.OnNext(newValue);
                 SyncToDomain();
             };
-            
-            _cellSize.OnValueChanged += (oldValue, newValue) => 
+
+            _cellSize.OnValueChanged += (oldValue, newValue) =>
             {
                 _cellSizeSubject.OnNext(newValue);
                 SyncToDomain();
@@ -98,9 +100,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncFromDomain()
         {
             if (_domainGameSession == null) return;
-            
+
             _isGameActive.Value = _domainGameSession.IsGameActive;
-            
+
             if (_domainGameSession.Field != null)
             {
                 _fieldWidth.Value = _domainGameSession.Field.Width;
@@ -114,9 +116,9 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         private void SyncToDomain()
         {
             if (_domainGameSession == null) return;
-            
+
             _domainGameSession.IsGameActive = _isGameActive.Value;
-            
+
             if (_domainGameSession.Field != null)
             {
                 var field = new GameField(_fieldWidth.Value, _fieldHeight.Value, _cellSize.Value);
@@ -124,7 +126,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             }
         }
 
-#if SERVER || HOST
         [ServerRpc(RequireOwnership = false)]
         public void StartGameServerRpc(Guid player1Id, Guid player2Id, int fieldWidth, int fieldHeight, float cellSize)
         {
@@ -138,7 +139,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
 
             StartNewTurn(player1Id);
             _isGameActive.Value = true;
-            
+
             NotifyGameStartedClientRpc();
         }
 
@@ -160,7 +161,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             var turnNumber = _networkTurn.GetCurrentTurnNumber() + 1;
             var timeLimit = _config.GetGameRules().TurnTimeLimit;
             _networkTurn.StartNewTurn(playerId, turnNumber, timeLimit);
-            
+
             NotifyTurnStartedClientRpc(playerId);
         }
 
@@ -204,13 +205,11 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
             }
 
             if (currentIndex == -1) return null;
-            
+
             var nextIndex = (currentIndex + 1) % playerIds.Count;
             return playerIds[nextIndex];
         }
-#endif
 
-#if CLIENT || HOST
         [ClientRpc]
         public void NotifyGameStartedClientRpc()
         {
@@ -222,7 +221,6 @@ namespace client.Assets.Scripts.Infrastructure.Network.Shared
         {
             Debug.Log($"Turn started for player: {playerId}");
         }
-#endif
 
         public List<Position> GetObstacles()
         {

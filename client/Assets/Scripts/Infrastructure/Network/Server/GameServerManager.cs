@@ -103,7 +103,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
 
-        private async void StartGame()
+        private void StartGame()
         {
             var playerIds = _clientToPlayerMap.Values.ToList();
             if (playerIds.Count != 2) return;
@@ -169,7 +169,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
 
-        public async void OnMoveUnitRequested(Guid unitId, Position fromPosition, Position toPosition, Guid requestingPlayerId)
+        public void OnMoveUnitRequested(Guid unitId, Position fromPosition, Position toPosition, Guid requestingPlayerId)
         {
             if (!_actionValidator.ValidateMovement(unitId, fromPosition, toPosition, requestingPlayerId))
             {
@@ -201,7 +201,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
             }
         }
 
-        public async void OnAttackUnitRequested(Guid attackerId, Guid targetId, Position attackerPosition, Position targetPosition, Guid requestingPlayerId)
+        public void OnAttackUnitRequested(Guid attackerId, Guid targetId, Position attackerPosition, Position targetPosition, Guid requestingPlayerId)
         {
             if (!_actionValidator.ValidateAttack(attackerId, targetId, attackerPosition, targetPosition, requestingPlayerId))
             {

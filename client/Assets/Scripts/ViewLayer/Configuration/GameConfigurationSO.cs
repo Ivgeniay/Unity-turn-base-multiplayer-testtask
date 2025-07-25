@@ -37,7 +37,8 @@ namespace client.Assets.Scripts.ViewLayer.Configuration
         [SerializeField] private int startingTurn = 1;
 
         [Header("Network Settings")]
-        [SerializeField] private int defaultPort = 7777;
+        [SerializeField] private string address = "127.0.0.1";
+        [SerializeField] private ushort defaultPort = 7777;
         [SerializeField] private int maxConnections = 2;
         [SerializeField] private float connectionTimeout = 30f;
 
@@ -106,6 +107,7 @@ namespace client.Assets.Scripts.ViewLayer.Configuration
         {
             return new NetworkSettings
             {
+                Adress = address,
                 DefaultPort = defaultPort,
                 MaxConnections = maxConnections,
                 ConnectionTimeout = connectionTimeout
