@@ -1,13 +1,11 @@
 using client.Assets.Scripts.Domain.Interfaces.Factories;
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Constants;
 using client.Assets.Scripts.Domain.Commands;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Services;
-using System.Threading.Tasks;
-using System.Threading;
-using MediatR;
 using System;
 
 namespace client.Assets.Scripts.Application.UseCases
@@ -32,7 +30,7 @@ namespace client.Assets.Scripts.Application.UseCases
             _config = gameConfiguration;
         }
 
-        public async Task<GameSession> Handle(StartGameCommand request, CancellationToken cancellationToken)
+        public GameSession Handle(StartGameCommand request)
         {
             var fieldTemplate = _config.GetFieldTemplate();
             var gameSettings = _config.GetGameSettings();

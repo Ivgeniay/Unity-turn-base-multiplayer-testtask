@@ -15,9 +15,27 @@ MonoBehaviour:
   fieldWidth: 10
   fieldHeight: 10
   cellSize: 0.5
-  obstacles: []
-  player1Units: []
-  player2Units: []
+  obstacles:
+  - positions:
+    - {x: 5, y: 5}
+    - {x: 5, y: 6}
+  - positions:
+    - {x: 2, y: 2}
+    - {x: 2, y: 3}
+  player1Units:
+  - isFastMelee: 1
+    relativePosition: {x: 0, y: 0}
+  - isFastMelee: 1
+    relativePosition: {x: 1, y: 0}
+  - isFastMelee: 0
+    relativePosition: {x: 2, y: 0}
+  player2Units:
+  - isFastMelee: 1
+    relativePosition: {x: 10, y: 10}
+  - isFastMelee: 1
+    relativePosition: {x: 9, y: 10}
+  - isFastMelee: 0
+    relativePosition: {x: 8, y: 10}
   fastMeleeMovementRange: 3
   fastMeleeAttackRange: 1
   slowRangedMovementRange: 1

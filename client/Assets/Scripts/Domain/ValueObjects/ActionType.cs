@@ -1,5 +1,5 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using UnityEngine;
-using MediatR;
 using System;
 
 namespace client.Assets.Scripts.Domain.ValueObjects

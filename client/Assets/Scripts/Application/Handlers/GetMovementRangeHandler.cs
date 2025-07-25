@@ -1,8 +1,6 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.Interfaces.Configs;
 using client.Assets.Scripts.Domain.Commands;
-using System.Threading.Tasks;
-using System.Threading;
-using MediatR;
 
 namespace client.Assets.Scripts.Application.Handlers
 {
@@ -15,10 +13,10 @@ namespace client.Assets.Scripts.Application.Handlers
             _config = config;
         }
 
-        public Task<int> Handle(GetMovementRangeQuery request, CancellationToken cancellationToken)
+        public int Handle(GetMovementRangeQuery request)
         {
             var stats = _config.GetUnitStats(request.UnitType);
-            return Task.FromResult(stats.MovementRange);
+            return stats.MovementRange;
         }
     }
 }

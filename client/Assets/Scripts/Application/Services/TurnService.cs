@@ -1,8 +1,8 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Commands;
 using client.Assets.Scripts.Domain.Services;
-using MediatR;
 using System;
 
 namespace client.Assets.Scripts.Application.Services
@@ -18,12 +18,12 @@ namespace client.Assets.Scripts.Application.Services
 
         public bool CanUseAction(Turn turn, ActionType actionType)
         {
-            return _mediator.Send(new CanUseActionQuery { Turn = turn, ActionType = actionType }).Result;
+            return _mediator.Send(new CanUseActionQuery { Turn = turn, ActionType = actionType });
         }
 
         public void UseAction(Turn turn, ActionType actionType)
         {
-            _mediator.Send(new UseActionCommand { Turn = turn, ActionType = actionType}).Wait();
+            _mediator.Send(new UseActionCommand { Turn = turn, ActionType = actionType});
         }
 
         public bool IsTurnComplete(Turn turn)

@@ -1,14 +1,12 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Commands;
-using System.Threading.Tasks;
-using System.Threading;
-using MediatR;
 
 namespace client.Assets.Scripts.Application.Handlers
 {
     public class UseActionHandler : IRequestHandler<UseActionCommand>
     {
-        public Task Handle(UseActionCommand request, CancellationToken cancellationToken)
+        public void Handle(UseActionCommand request)
         {
             switch (request.ActionType)
             {
@@ -19,8 +17,6 @@ namespace client.Assets.Scripts.Application.Handlers
                     request.Turn.AttackUsed = true;
                     break;
             }
-
-            return Task.CompletedTask;
         }
     }
 }

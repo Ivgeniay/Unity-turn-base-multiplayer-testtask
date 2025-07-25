@@ -1,11 +1,11 @@
 using client.Assets.Scripts.Domain.Interfaces.Services;
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Commands;
 using client.Assets.Scripts.Domain.Entities;
 using client.Assets.Scripts.Domain.Services;
 using System.Collections.Generic;
 using System.Linq;
-using MediatR;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
 
@@ -41,7 +41,7 @@ namespace client.Assets.Scripts.Application.Services
 
         public List<Position> GetAttackablePositions(Unit unit, GameField field)
         {
-            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type }).Result;
+            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type });
             var positions = new List<Position>();
 
             for (int x = unit.Position.x - attackRange; x <= unit.Position.x + attackRange; x++)
@@ -63,7 +63,7 @@ namespace client.Assets.Scripts.Application.Services
 
         public List<Unit> GetUnitsInAttackRange(Unit unit, List<Unit> allUnits)
         {
-            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type }).Result;
+            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type });
             
             return allUnits.Where(target => 
                 target.IsAlive && 
@@ -74,7 +74,7 @@ namespace client.Assets.Scripts.Application.Services
 
         public List<Position> GetValidMovementPositions(Unit unit, GameField field, List<Unit> allUnits)
         {
-            var movementRange = _mediator.Send(new GetMovementRangeQuery { UnitType = unit.Type }).Result;
+            var movementRange = _mediator.Send(new GetMovementRangeQuery { UnitType = unit.Type });
             return _pathfindingService.GetReachablePositions(unit.Position, movementRange, field, allUnits);
         }
 
@@ -97,14 +97,14 @@ namespace client.Assets.Scripts.Application.Services
 
         public bool IsWithinAttackRange(Unit unit, Position targetPosition)
         {
-            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type }).Result;
+            var attackRange = _mediator.Send(new GetAttackRangeQuery { UnitType = unit.Type });
             var distance = Position.Distance(unit.Position, targetPosition);
             return distance <= attackRange;
         }
 
         public bool IsWithinMovementRange(Unit unit, Position targetPosition)
         {
-            var movementRange = _mediator.Send(new GetMovementRangeQuery { UnitType = unit.Type }).Result;
+            var movementRange = _mediator.Send(new GetMovementRangeQuery { UnitType = unit.Type });
             var distance = Position.Distance(unit.Position, targetPosition);
             return distance <= movementRange;
         }

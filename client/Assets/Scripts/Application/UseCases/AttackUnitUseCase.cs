@@ -1,10 +1,8 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.Interfaces.Services;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Services;
-using System.Threading.Tasks;
-using System.Threading;
-using MediatR;
 
 namespace client.Assets.Scripts.Application.UseCases
 {
@@ -27,7 +25,7 @@ namespace client.Assets.Scripts.Application.UseCases
             _turnService = turnService;
         }
 
-        public async Task<bool> Handle(Attack request, CancellationToken cancellationToken)
+        public bool Handle(Attack request)
         {
             var attacker = _gameContextProvider.GetUnit(request.AttackerId);
             if (attacker == null) return false;

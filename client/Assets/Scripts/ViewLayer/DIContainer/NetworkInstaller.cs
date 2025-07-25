@@ -4,7 +4,6 @@ using client.Assets.Scripts.Infrastructure.Network.Shared;
 using client.Assets.Scripts.Infrastructure.Interfaces;
 using client.Assets.Scripts.Domain.Constants;
 using UnityEngine;
-using MediatR;
 using Zenject;
 
 namespace client.Assets.Scripts.ViewLayer.DIContainer

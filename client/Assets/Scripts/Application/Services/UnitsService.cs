@@ -1,7 +1,7 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Services;
 using client.Assets.Scripts.Domain.Commands;
-using MediatR;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
 
@@ -50,12 +50,12 @@ namespace client.Assets.Scripts.Application.Services
 
         public int GetMovementRange(UnitType unitType)
         {
-            return _mediator.Send(new GetMovementRangeQuery { UnitType = unitType }).Result;
+            return _mediator.Send(new GetMovementRangeQuery { UnitType = unitType });
         }
 
         public int GetAttackRange(UnitType unitType)
         {
-            return _mediator.Send(new GetAttackRangeQuery { UnitType = unitType }).Result;
+            return _mediator.Send(new GetAttackRangeQuery { UnitType = unitType });
         }
     }
 }

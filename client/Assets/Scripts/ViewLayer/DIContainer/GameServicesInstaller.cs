@@ -13,10 +13,11 @@ using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Services;
 using client.Assets.Scripts.Domain.Commands;
 using UnityEngine;
-using MediatR;
 using Zenject;
 using System;
 using client.Assets.Scripts.Domain.Entities;
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
+using client.Assets.Scripts.Infrastructure.ServiceMediator;
 
 namespace client.Assets.Scripts.ViewLayer.DIContainer
 {
@@ -49,15 +50,15 @@ namespace client.Assets.Scripts.ViewLayer.DIContainer
 
         private void InstallApplicationServices()
         {
-            Container.Bind<MoveUnitUseCase>().AsSingle();
-            Container.Bind<AttackUnitUseCase>().AsSingle();
-            Container.Bind<EndTurnUseCase>().AsSingle();
-            Container.Bind<StartGameUseCase>().AsSingle();
+            // Container.Bind<MoveUnitUseCase>().AsSingle();
+            // Container.Bind<AttackUnitUseCase>().AsSingle();
+            // Container.Bind<EndTurnUseCase>().AsSingle();
+            // Container.Bind<StartGameUseCase>().AsSingle();
 
-            Container.Bind<GetMovementRangeHandler>().AsSingle();
-            Container.Bind<GetAttackRangeHandler>().AsSingle();
-            Container.Bind<CanUseActionHandler>().AsSingle();
-            Container.Bind<UseActionHandler>().AsSingle();
+            // Container.Bind<GetMovementRangeHandler>().AsSingle();
+            // Container.Bind<GetAttackRangeHandler>().AsSingle();
+            // Container.Bind<CanUseActionHandler>().AsSingle();
+            // Container.Bind<UseActionHandler>().AsSingle();
         }
 
         private void InstallInfrastructureServices()
@@ -70,6 +71,7 @@ namespace client.Assets.Scripts.ViewLayer.DIContainer
 
         private void InstallMediatR()
         {
+            Container.Bind<IServiceProvider>().To<ZenjectServiceProvider>().AsSingle();
             Container.Bind<IMediator>().To<Mediator>().AsSingle();
             
             Container.Bind<IRequestHandler<Movement, bool>>().To<MoveUnitUseCase>().AsSingle();

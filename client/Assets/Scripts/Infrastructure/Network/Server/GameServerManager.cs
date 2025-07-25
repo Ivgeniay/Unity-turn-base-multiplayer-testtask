@@ -12,10 +12,10 @@ using Unity.Netcode;
 using UnityEngine;
 using System.Linq;
 using Zenject;
-using MediatR;
 using System;
 
 using Unit = client.Assets.Scripts.Domain.Entities.Unit;
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 
 namespace client.Assets.Scripts.Infrastructure.Network.Server
 {
@@ -120,7 +120,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 CellSize = 0.5f
             };
 
-            var session = await _mediator.Send<GameSession>(startGameCommand);
+            var session = _mediator.Send<GameSession>(startGameCommand);
             if (session != null)
             {
                 // var session = _gameContextProvider.GetCurrentGameSession();
@@ -184,7 +184,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 ToPosition = toPosition
             };
 
-            var success = await _mediator.Send<bool>(moveCommand);
+            var success = _mediator.Send<bool>(moveCommand);
             if (success)
             {
                 if (_gameContextProvider is ServerGameContextProvider serverContextProvider)
@@ -217,7 +217,7 @@ namespace client.Assets.Scripts.Infrastructure.Network.Server
                 TargetPosition = targetPosition
             };
 
-            var success = await _mediator.Send<bool>(attackCommand);
+            var success = _mediator.Send<bool>(attackCommand);
             if (success)
             {
                 if (_gameContextProvider is ServerGameContextProvider serverContextProvider)

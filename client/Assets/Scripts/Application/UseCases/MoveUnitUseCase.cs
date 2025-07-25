@@ -1,10 +1,10 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using client.Assets.Scripts.Domain.Interfaces.Services;
 using client.Assets.Scripts.Domain.ValueObjects;
 using client.Assets.Scripts.Domain.Interfaces;
 using client.Assets.Scripts.Domain.Services;
 using System.Threading.Tasks;
 using System.Threading;
-using MediatR;
 
 namespace client.Assets.Scripts.Application.UseCases
 {
@@ -27,7 +27,7 @@ namespace client.Assets.Scripts.Application.UseCases
             _turnService = turnService;
         }
 
-        public async Task<bool> Handle(Movement request, CancellationToken cancellationToken)
+        public bool Handle(Movement request)
         {
             var unit = _gameContextProvider.GetUnit(request.UnitId);
             if (unit == null) return false;

@@ -1,5 +1,5 @@
+using client.Assets.Scripts.Domain.Interfaces.Mediator;
 using System;
-using MediatR;
 
 namespace client.Assets.Scripts.Domain.Commands
 {
